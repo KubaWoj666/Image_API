@@ -1,9 +1,12 @@
 from rest_framework.response import Response
 from rest_framework import generics
 
-from core.models import Images, CustomUser
-from .serializers import ImageSerializer, ImageBasicDetailSerializer, ImagePremiumDetailSerializer, ImageEnterpriseDetailSerializer
+from core.models import Images, CustomUser, AccountTiers, Thumbnail
+from .serializers import ImageSerializer, BasicSerializer, PremiumSerializer, EnterpriseSerializer
 
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 class ImageListCreateAPIView(generics.ListCreateAPIView):
     queryset = Images.objects.all()
@@ -17,17 +20,34 @@ class ImageListCreateAPIView(generics.ListCreateAPIView):
     
 
 class ImageDetailAPIView(generics.RetrieveAPIView):
-    queryset = Images.objects.all()
-    serializer_class = ImageBasicDetailSerializer
+    queryset = Thumbnail.objects.all()
+    serializer_class = BasicSerializer
 
+
+    def retrieve(self, request, *args, **kwargs):
+        image_id = kwargs.get('pk')  
+        user = self.request.user
+        account_tiers = user.account_tiers
+        print(account_tiers)
+        try:
+            thumbnail = Thumbnail.objects.get(image_id=image_id) 
+            if account_tiers == "Basic":
+                print("basic")
+                serializer = BasicSerializer(thumbnail)
+                return Response(serializer.data)
+            if account_tiers == "Premium":
+                print(" if premium")
+                serializer = PremiumSerializer(thumbnail)
+                return Response(serializer.data)
+            if account_tiers == "Enterprise":
+                serializer = EnterpriseSerializer(thumbnail)
+                return Response(serializer.data)
+            
+        except Thumbnail.DoesNotExist:
+            return Response({'error': 'Miniatura o podanym ID nie istnieje.'}, status=404)
   
-    def get_serializer_class(self):
-        user = CustomUser.objects.get(username=self.request.user.username)
 
-        
-        if user.account_tiers == 'BASIC':
-            return ImageBasicDetailSerializer
-        if user.account_tiers == 'PREMIUM':
-            return ImagePremiumDetailSerializer
-        if user.account_tiers == 'ENTERPRISE':
-            return ImageEnterpriseDetailSerializer
+    
+
+
+
