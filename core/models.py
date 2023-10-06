@@ -5,18 +5,9 @@ from django.core.validators import FileExtensionValidator
 
 from django_advance_thumbnail import AdvanceThumbnailField
 
-from imagekit.models import ImageSpecField
-from imagekit.processors import ResizeToFill
-from imagekit.models import ProcessedImageField
-
 import uuid
 
-from PIL import Image
-from django.core.files import File
-from tempfile import NamedTemporaryFile
-
 User = settings.AUTH_USER_MODEL 
-
 
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -61,6 +52,4 @@ class Thumbnail(models.Model):
     thumbnail_400 = AdvanceThumbnailField(source_field="thumbnail", upload_to="thumbnail_200", null=True, blank=True, size=(400, 400))
 
     
-    
-
     

@@ -1,9 +1,7 @@
-from django.contrib.auth.models import Group
 from django.db.models.signals import post_migrate, post_save
 from django.dispatch import receiver
 
 from .models import AccountTiers, Images, Thumbnail, ThumbnailsSize
-from imagekit.processors import ResizeToFill
 
 from PIL import Image
 
@@ -28,16 +26,16 @@ def create_thumbnail(sender, created, instance, *args, **kwargs):
     if created:
         image = instance.image
         
-
         account_name = instance.owner.account_tiers
         account_tier = AccountTiers.objects.get(name=account_name)
+
         Thumbnail.objects.create(image=instance, thumbnail=image)
+
         qs_thumbnail_sizes = account_tier.thumbnail_size.all()
 
         for thumbnail_size in qs_thumbnail_sizes:
-            width = int(thumbnail_size.width)
-            height = int(thumbnail_size.height)
-            print(width, height)
+            width = thumbnail_size.width
+            height = thumbnail_size.height
 
             image_obj = Images.objects.last()
             thumbnail_obj = Thumbnail.objects.last()

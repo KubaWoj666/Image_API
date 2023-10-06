@@ -1,12 +1,10 @@
 from rest_framework.response import Response
 from rest_framework import generics
 
-from core.models import Images, CustomUser, AccountTiers, Thumbnail
+from core.models import Images, Thumbnail
 from .serializers import ImageSerializer, BasicSerializer, PremiumSerializer, EnterpriseSerializer
 
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+
 
 class ImageListCreateAPIView(generics.ListCreateAPIView):
     queryset = Images.objects.all()
@@ -28,23 +26,23 @@ class ImageDetailAPIView(generics.RetrieveAPIView):
         image_id = kwargs.get('pk')  
         user = self.request.user
         account_tiers = user.account_tiers
-        print(account_tiers)
+
         try:
-            thumbnail = Thumbnail.objects.get(image_id=image_id) 
-            if account_tiers == "Basic":
-                print("basic")
+            thumbnail = Thumbnail.objects.get(image=image_id) 
+            if account_tiers.name == "Basic":
                 serializer = BasicSerializer(thumbnail)
                 return Response(serializer.data)
-            if account_tiers == "Premium":
-                print(" if premium")
+            
+            if account_tiers.name == "Premium":
                 serializer = PremiumSerializer(thumbnail)
                 return Response(serializer.data)
-            if account_tiers == "Enterprise":
+            
+            if account_tiers.name == "Enterprise":
                 serializer = EnterpriseSerializer(thumbnail)
                 return Response(serializer.data)
             
         except Thumbnail.DoesNotExist:
-            return Response({'error': 'Miniatura o podanym ID nie istnieje.'}, status=404)
+            return Response({"error": "Thumbnail dose not exist!"}, status=404)
   
 
     
